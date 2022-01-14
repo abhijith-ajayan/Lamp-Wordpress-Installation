@@ -1,7 +1,7 @@
 Installing and configuring Wordpress using Ansible playbook in RedHat and Debian based Distro's
 =========
 
-The infrastructure here includes one ansible master server and two ansible client servers(Ubuntu and Amazon linux). Ansible is installed in the Master server and using ansible playbook we will be installing and configuring Apache, MariaDB and Wordpress in the client servers.
+The infrastructure here includes one ansible master server and two ansible client servers(Ubuntu and Amazon linux). Ansible is installed in the Master server and using ansible playbook we will be installing and configuring Apache, database and Wordpress in the client servers.
 
 Prerequisites:
 ---------
@@ -33,7 +33,7 @@ Install Ansible and verify the connection between Ansible server and client mach
 Creating role for the tasks:
 ---------
 
-Roles let you automatically load related vars, files, tasks, handlers, and other Ansible artifacts based on a known file structure. In this project i'm have created lamp role for installation and configuration of below the task. 
+Roles let you automatically load related vars, files, tasks, handlers, and other Ansible artifacts based on a known file structure. In this project i have created lamp role for installation and configuration of the below tasks. 
 
   - Install Apache webserver
 
