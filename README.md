@@ -19,17 +19,18 @@ Install Ansible and verify the connection between Ansible server and client mach
  - Ansible Modules used
 
     - yum
+    - apt
     - service
     - copy
     - file
     - template
     - unarchive
-    - command
+    - shell
+   
 
 
 
-
-Create roles for the tasks:
+Creating role for the tasks:
 ---------
 
 Roles let you automatically load related vars, files, tasks, handlers, and other Ansible artifacts based on a known file structure. In this project i'm have created lamp role for installation and configuration of below the task. 
@@ -44,12 +45,12 @@ Roles let you automatically load related vars, files, tasks, handlers, and other
 
   - Creating domain virtual host
 
-Roles can be created using init command.
+Roles can be created using init command(it should be created under /etc/ansible/roles directory).
 
 > [root@ip-172-31-3-208 roles]# ansible-galaxy init lamp
 
 
-These main tasks for lamp role are written to file lamp/tasks/main.yml
+The main tasks for lamp role is written to file lamp/tasks/main.yml
 
 ```
 
