@@ -8,6 +8,25 @@ Prerequisites:
 
 Install Ansible and verify the connection between Ansible server and client machine on which you need to automate tasks. Ansible can be installed using PIP or package manager.
 
+- Install Ansible on your Master Machine
+
+    - yum install ansible - Redhat based distribution
+
+    - apt install ansible - Debian based distribution
+    
+    - amazon-linux-extras install ansible2 - on amazon-linux ec2 instances
+
+ - Ansible Modules used
+
+    - yum
+    - service
+    - copy
+    - file
+    - template
+    - unarchive
+    - command
+
+
 
 
 Create roles for the tasks:
@@ -15,22 +34,24 @@ Create roles for the tasks:
 
 Roles let you automatically load related vars, files, tasks, handlers, and other Ansible artifacts based on a known file structure. In this project i'm have created lamp role for installation and configuration of below the task. 
 
- * Install Apache webserver
+  - Install Apache webserver
 
-* Install PHP
+  - Install PHP
 
-* Install MariaDB and Mysql database server
+  - Install MariaDB and Mysql database server
 
-* Creating a user account and setting up document root for domain
+  - Creating a user account and setting up document root for domain
 
- * Creating domain virtual host
+  - Creating domain virtual host
 
 Roles can be created using init command.
 
-[root@ip-172-31-3-208 roles]# ansible-galaxy init lamp
+> [root@ip-172-31-3-208 roles]# ansible-galaxy init lamp
 
 
 These main tasks for lamp role are written to file lamp/tasks/main.yml
+
+```
 
 ---
 
@@ -219,12 +240,14 @@ These main tasks for lamp role are written to file lamp/tasks/main.yml
   notify:
     - httpd-restart
 
-
+```
 
 Variables for lamp role:
 
 
 Variables for this role is declared in file lamp/vars/main.yml    
+
+```
 
 ---
 
@@ -242,6 +265,7 @@ mysql_db_user: "wordpress"
 mysql_db_pass: "wordpress"
 mysql_root_pass: "mysqlroot@123"
 
+```
 
 Adding handlers to playbook
 
@@ -249,6 +273,7 @@ Handlers are tasks that only run when notified. Handlers are used in this projec
 
 Handlers tasks are written to lamp/handlers/main.yml file
 
+```
 ---
 
 - name: "httpd-restart"
@@ -264,6 +289,8 @@ Handlers tasks are written to lamp/handlers/main.yml file
     name: apache2
     state: restarted
     enabled: true
+    
+```
 
 Adding Templates
 
@@ -273,6 +300,7 @@ We have added httpd.conf, virtualhost and my.cnf templates in this folder these 
 Sample Playbook
 ----------------
 
+```
 ---
 
 - name: "Installation"
@@ -357,6 +385,14 @@ Sample Playbook
       service:
         name: httpd
         state: reloaded 
+```
+
+Outputs
+-------
+
+![](images/output1.png)
+![](images/output2.png)
+![](images/output3.png)
 
 Conclusion
 ----------
