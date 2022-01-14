@@ -1,0 +1,17 @@
+---
+
+ubuntu_apache_user: "www-data"
+ubuntu_apache_group: "www-data"
+amazon_apache_user: "apache"
+amazon_apache_group: "apache"
+
+wp_url: "https://wordpress.org/latest.tar.gz"
+domain_name: "www.example.com"
+httpd_port: "80"
+
+mysql_db_name: "wordpress"
+mysql_db_user: "wordpress"
+mysql_db_pass: "wordpress"
+mysql_root_pass: "mysqlroot@123"
+
+

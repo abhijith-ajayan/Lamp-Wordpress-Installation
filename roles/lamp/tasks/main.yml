@@ -1,0 +1,186 @@
+---
+
+- name: "Installing packages on amazon linux server"
+  when: ansible_os_family == "RedHat"
+  yum:
+    name: 
+      - httpd
+      - mariadb-server
+      - MySQL-python  
+    state: present
+  notify:
+    - httpd-restart
+
+
+- name: "Installing php on amazon linux server"
+  when: ansible_os_family == "RedHat"
+  shell: "amazon-linux-extras install php7.4 -y"
+
+- name: "Creating Virtualhost on amazon linux server"
+  when: ansible_os_family == "RedHat"
+  template:
+    src: virtualhost.conf.j2
+    dest: "/etc/httpd/conf.d/{{domain_name}}.conf"
+  notify:
+    - httpd-restart
+    
+
+- name: "Creating Documentroot on amazon linux server"
+  when: ansible_os_family == "RedHat"
+  file:
+    path: "/var/www/html/{{ domain_name }}"
+    state: directory
+    owner: "{{ amazon_apache_user }}"
+    group: "{{ amazon_apache_group }}"
+
+
+- name: "Installing packages on ubuntu server"
+  when: ansible_os_family == "Debian"
+  apt:
+    name:
+      - apache2
+      - mysql-server
+      - php
+      - php7.4-fpm 
+      - libapache2-mod-php
+      - php-mysql
+      - python3-pip
+      - python3-pymysql
+    state: present
+    update_cache: true
+  notify:
+    - apache2-restart
+  
+- name: "Creating Virtualhost on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  template:
+    src: virtualhost.conf.j2
+    dest: "/etc/apache2/sites-available/{{domain_name}}.conf"
+        
+- name: "Creating Documentroot on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  file:
+    path: "/var/www/html/{{ domain_name }}"
+    state: directory
+    owner: "{{ ubuntu_apache_user }}"
+    group: "{{ ubuntu_apache_group }}"
+            
+            
+- name: "Restart and Enabling Services on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  with_items:
+    - apache2
+    - mysql
+    - php7.4-fpm      
+            
+- name: "Copying .my.cnf on both servers"
+  template:
+    src: .my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+
+- name : "Restarting mariadb"
+  when: ansible_os_family == "RedHat"
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true
+
+- name: "Database server_root password setup on both servers"
+  ignore_errors: true
+  mysql_user:
+    login_user: "root"
+    login_password: ""
+    user: "root"
+    host_all: yes
+    password: "{{ mysql_root_pass }}"
+
+- name: "Removing anonymous user on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  mysql_user:
+    config_file: "/root/.my.cnf"
+    name: ''
+    state: absent
+    host_all: yes
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+            
+- name: "Removing test Database on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  mysql_db:
+    config_file: "/root/.my.cnf"
+    name: test   
+    state: absent
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+            
+- name: "Creating wordpress database on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  mysql_db:
+    config_file: "/root/.my.cnf"
+    name: "{{ mysql_db_name }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: "Creating wordpress user and setting up Privileges on Ubuntu Server"
+  when: ansible_os_family == "Debian"
+  mysql_user:
+    config_file: "/root/.my.cnf"
+    name: "{{ mysql_db_user }}"
+    state: present
+    password: "{{ mysql_db_pass }}"
+    priv: "{{ mysql_db_name }}.*:ALL"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+            
+- name: "Removing anonymous user on Amazon linux Server"
+  when: ansible_os_family == "RedHat"
+  mysql_user:
+    config_file: "/root/.my.cnf"
+    host_all: yes
+    name: ""
+    state: absent
+            
+- name: "Removing test Database on Amazon linux Server"
+  when: ansible_os_family == "RedHat"
+  mysql_db:
+    config_file: /root/.my.cnf     
+    name: test   
+    state: absent
+            
+- name: "Creating wordpress database on Amazon linux Server"
+  when: ansible_os_family == "RedHat"
+  mysql_db:
+    config_file: /root/.my.cnf
+    name: "{{ mysql_db_name }}"
+    state: present
+            
+- name: "Creating wordpress user and setting up Privileges on Amazon linux Server"
+  when: ansible_os_family == "RedHat"
+  mysql_user:
+    config_file: /root/.my.cnf
+    name: "{{ mysql_db_user }}"
+    state: present
+    password: "{{ mysql_db_pass }}"
+    priv: "{{ mysql_db_name }}.*:ALL"
+            
+- name: "Restarting db on ubuntu"        
+  when: ansible_os_family == "Debian"
+  service:
+    name: mysql
+    state: restarted
+    enabled: true
+  notify:
+    - apache2-restart
+        
+- name: "Restarting db amazon"
+  when: ansible_os_family == "RedHat"
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true
+  notify:
+    - httpd-restart

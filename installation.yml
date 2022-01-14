@@ -1,0 +1,84 @@
+---
+
+- name: "Installation"
+  hosts: all
+  become: true
+  roles:
+    - lamp
+  vars:
+    - ubuntu_apache_user: "www-data"
+    - ubuntu_apache_group: "www-data"
+    - amazon_apache_user: "apache"
+    - amazon_apache_group: "apache"
+    - wp_url: "https://wordpress.org/latest.tar.gz"
+    - domain_name: "www.example.com"
+   
+  tasks:
+    
+    - name: "Wordpress download on both server"
+      unarchive:
+        src: "{{ wp_url }}"
+        dest: /tmp/
+        remote_src: yes
+         
+    - name: "Moving Files to Ubuntu server"
+      when: ansible_os_family == "Debian"
+      copy:
+        src: "/tmp/wordpress/"
+        dest: "/var/www/html/{{ domain_name }}/"
+        owner: "{{ ubuntu_apache_user }}"
+        group: "{{ ubuntu_apache_group }}"
+        remote_src: yes
+    
+    - name: "Moving Files to Amazon linux server"
+      when: ansible_os_family == "RedHat"
+      copy:
+        src: "/tmp/wordpress/"
+        dest: "/var/www/html/{{ domain_name }}/"
+        owner: "{{ amazon_apache_user }}"
+        group: "{{ amazon_apache_group }}"
+        remote_src: yes
+
+            
+    - name: "Creating wp-config.php on ubuntu"
+      when: ansible_os_family == "Debian"
+      template:
+        src: wp-config.php.j2
+        dest: "/var/www/html/{{ domain_name }}/wp-config.php"
+        owner: "{{ ubuntu_apache_user }}"
+        group: "{{ ubuntu_apache_group }}"
+  
+    - name: "Creating wp-config.php on amazon linux server"
+      when: ansible_os_family == "RedHat"
+      template:
+        src: wp-config.php.j2
+        dest: "/var/www/html/{{ domain_name }}/wp-config.php"
+        owner: "{{ amazon_apache_user }}"
+        group: "{{ amazon_apache_group }}"
+             
+    - name: "deleting unwanted files from both servers"
+      file:
+        path: /tmp/wordpress
+        state: absent
+
+    
+    - name: "Enabling virtualhost"
+      when: ansible_os_family == "Debian"
+      shell: "a2ensite {{ domain_name }}.conf"
+
+    - name: "Disabling old one"
+      when: ansible_os_family == "Debian"
+      shell: "a2dissite 000-default.conf"
+
+
+    - name: "Reloading Apache"
+      when: ansible_os_family == "Debian"
+      service:
+        name: apache2
+        state: reloaded
+
+    - name: "Reloading Apache"
+      when: ansible_os_family == "RedHat"
+      service:
+        name: httpd
+        state: reloaded 
